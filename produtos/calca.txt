@@ -1,6 +1,1 @@
-calca
-calca de algodao
-10
-20
-100
-esgotado
+calca,calca de algodao,10,20,50,esgotado,nao-perecivel

@@ -1,100 +1,95 @@
-from classes.produto import Produto
-from classes.produtoPerecivel import ProdutoPerecivel
+
 import os
+import datetime
 
 class Estoque:
 
-    @staticmethod
-    def mecher_no_estoque(produto, valor):
-        '''aumenta ou diminui o estoque de um produto'''
-        with open('./pooAula/controle_estoque/produtos/'+ produto + '.txt', 'r') as p:
-            conteudo = p.readlines()
-            estoque = int(conteudo[4].strip('\n')[0]) + valor
-            return estoque
-    
 
-    def cadastrar_produto(self, produto):
+    def cadastrar_produto(self, nome, descricao, precoCompra, precoVenda, estoque, status, validade):
         '''cadastra um produto no estoque'''
-        with open('./pooAula/controle_estoque/produtos/' + produto.nome + '.txt', 'w') as p:
-            p.write(produto.nome + '\n')
-            p.write(produto.descricao + '\n')
-            p.write(produto.precoCompra + '\n')
-            p.write(produto.precoVenda + '\n')
-            p.write(produto.estoque + '\n')
-            p.write(produto.status + '\n')
-            if type(produto) is ProdutoPerecivel:
-                p.write(produto.validade)
-            print('produto cadastrado com sucesso')
+        with open('./pooAula/projeto_estoque/produtos/' + nome + '.txt', 'w') as p:
+            p.write(nome +','+ descricao + ',' + str(precoCompra) + ',' + str(precoVenda) + ',' + str(estoque) + ',' + status + ',' + validade)
+            print('operacao realizada com sucesso')
 
     def listar_produtos(self):
         '''traz todos os produtos cadastrados'''
-        produtos = os.listdir('./pooAula/controle_estoque/produtos')
+        produtos = os.listdir('./pooAula/projeto_estoque/produtos')
         for produto in produtos:
-            with open('./pooAula/controle_estoque/produtos/' + produto, 'r') as p:
-                print(p.read())
+            with open('./pooAula/projeto_estoque/produtos/' + produto, 'r') as p:
+                print(p.read().split(',')[0])
                 print('--' * 20)    
  
  
     def listar_disponiveis(self):
         '''traz todos os produtos disponíveis'''
-        produtos = os.listdir('./pooAula/controle_estoque/produtos')
-        print('Produtos disponíveis:')
-        print('--' * 20)
+        produtos = os.listdir('./pooAula/projeto_estoque/produtos')
+        lista = []
         for produto in produtos:
-            with open('./pooAula/controle_estoque/produtos/' + produto, 'r') as p:
-                conteudo = p.read()
-                if 'disponivel' in conteudo:
-                    print(conteudo)
-                    print('--' * 20)    
+            with open('./pooAula/projeto_estoque/produtos/' + produto, 'r') as p:
+                conteudo = p.read().split(',')
+                if conteudo[5] == 'disponivel':
+                    lista.append(conteudo)
+       
+        if len(lista)> 0:
+            return lista
+        else:
+            return 'sem itens no estoque'
 
 
     def listar_esgotados(self):
-        '''traz todos os produtos esgotados'''
-        produtos = os.listdir('./pooAula/controle_estoque/produtos')
-        print('Produtos indisponíveis:')
-        print('--' * 20)
+        '''traz todos os produtos disponíveis'''
+        produtos = os.listdir('./pooAula/projeto_estoque/produtos')
         for produto in produtos:
-            with open('./pooAula/controle_estoque/produtos/' + produto, 'r') as p:
-                conteudo = p.read()
-                if 'esgotado' in conteudo:
-                    print(conteudo)
-                    print('--' * 20)
+            with open('./pooAula/projeto_estoque/produtos/' + produto, 'r') as p:
+                conteudo = p.read().split(',')
+                lista = []
+                if conteudo[5] == 'esgotado':
+                    lista.append(conteudo)
+                    return lista
+                return 'sem itens no esgotados'
 
     def buscar_produto(self, produto): 
         '''busca um produto pelo nome'''
-        
-        if os.path.exists('./pooAula/controle_estoque/produtos/' + produto + '.txt'):
-            with open('./pooAula/controle_estoque/produtos/' + produto + '.txt', 'r') as p:
-                return p.readlines()
-        else:
-            print('produto nao cadastrado')
+        if os.path.exists('./pooAula/projeto_estoque/produtos/' + produto + '.txt'):
+            with open('./pooAula/projeto_estoque/produtos/' + produto + '.txt', 'r') as p:
+                return p.read().split(',')
+        return'produto nao cadastrado'
 
-    def atualizar_estoque(self, produto, valor):
+    def atualizar_estoque(self, produto, quantidade):
         '''aumenta o estque do produto'''
-
-        if os.path.exists('./pooAula/controle_estoque/produtos/' + produto + '.txt'):
-            estoque = self.mecher_no_estoque(produto, valor)
-            p = self.buscar_produto(produto)
-           
-            for x in range(len(p)):
-                p[x] = p[x].strip('\n')
-            
-            p[4] =  estoque + int(p[4])
-
-            if len(self.buscar_produto(produto)) > 6:
-                atualiza = ProdutoPerecivel(p[0], p[1], str(p[2]), str(p[3]), str(p[4]), p[5], p[6])
-            
-            else:
-                 atualiza = Produto(p[0],p[1],str(p[2]),str(p[3]),str(p[4]),p[5])
-            self.cadastrar_produto(atualiza)
-
-            print('estoque Atualizado')
+        produto = self.buscar_produto(produto)
+        produto[4] = str(int(produto[4]) + int(quantidade))
+        produto[5] = 'disponivel'
+        with open('./pooAula/projeto_estoque/produtos/' + produto[0] + '.txt','w') as p:
+            self.cadastrar_produto(produto[0], produto[1], produto[2], produto[3], produto[4], produto[5], produto[6])
+       
+    def remover_estoque(self, produto, quantidade):  
+        '''diminui o estque do produto'''
+        produto = self.buscar_produto(produto) 
+        if int(produto[4]) >= quantidade:
+              produto[4] = int(produto[4]) - quantidade
+              if produto[4] == 0:
+                produto[5] = 'esgotado'
+              with open('./pooAula/projeto_estoque/produtos/' + produto[0] + '.txt','w') as p:
+                self.cadastrar_produto(produto[0], produto[1], produto[2], produto[3], produto[4], produto[5], produto[6])
         else:
-            print('produto nao cadastrado')
+            print('quantidade insuficiente no estoque')
 
     def remover_produto(self, produto):
-        if os.path.exists('./pooAula/controle_estoque/produtos/' + produto + '.txt'):
-            os.remove('./pooAula/controle_estoque/produtos/' + produto + '.txt')
-            print('produto removido')
-        else:
-            print('produto nao cadastrado')
+        if os.path.exists('./pooAula/projeto_estoque/produtos/' + produto + '.txt'):
+            os.remove('./pooAula/projeto_estoque/produtos/' + produto + '.txt')
+            return 'removido com sucesso'
+        return 'produto nao cadastrado'
+    
+    def relatorio_estoque(self):
+        data = datetime.datetime.now()
+        with open('./pooAula/projeto_estoque/relatorio/relatorio' + str(data.date()) + '.txt', 'w') as r:
+            r.write('Produtos em Estoque\n')
+            r.write(('--' * 15) + '\n')
+        produtos = os.listdir('./pooAula/projeto_estoque/produtos')
+        estoque = None
+        for produto in produtos:
+            estoque = self.buscar_produto(produto.split('.txt')[0])           
+            with open('./pooAula/projeto_estoque/relatorio/relatorio' + str(data.date()) + '.txt', 'a') as r:
+                r.write('Produto: ' + estoque[0] + ' Quantidade: '+ estoque[4] + '\n' )
+        print('Relatorio feito com sucesso')

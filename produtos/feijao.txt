@@ -1,7 +1,1 @@
-feijao
-branco e gostoso
-10
-20
-89
-esgotado
-10/10/2020
+feijao,branco e gostoso,10,20,50,disponivel,10/10/2020

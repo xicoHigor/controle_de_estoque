@@ -1,0 +1,4 @@
+Produtos em Estoque
+------------------------------
+Produto: calca Quantidade: 50
+Produto: feijao Quantidade: 50
